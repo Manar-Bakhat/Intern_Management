@@ -1,14 +1,17 @@
-﻿using System.Security.Cryptography.X509Certificates;
+﻿using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace Intern_Management.Controllers
 {
-    internal class SymetricSecurityKey : X509Certificate2
+    internal class SymetricSecurityKey : SymmetricSecurityKey
     {
-        private object value;
-
-        public SymetricSecurityKey(object value)
+        public SymetricSecurityKey(object value) : base(GetBytesFromValue(value))
         {
-            this.value = value;
+        }
+
+        private static byte[] GetBytesFromValue(object value)
+        {
+            return Encoding.UTF8.GetBytes(value?.ToString() ?? string.Empty);
         }
     }
 }

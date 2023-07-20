@@ -12,6 +12,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using BCrypt.Net;
 
 namespace Intern_Management.Controllers
 {
@@ -33,24 +34,26 @@ namespace Intern_Management.Controllers
         {
             if (user != null && user.Email != null && user.Password != null)
             {
-                var userData = await GetUser(user.Email, user.Password);
+                // Crypter le mot de passe
+                var hashedPassword = BCrypt.Net.BCrypt.HashPassword(user.Password);
+
+                var userData = await GetUser(user.Email);
                 var jwt = _configuration.GetSection("Jwt").Get<Jwt>();
 
-                if (userData != null)
+                if (userData != null && BCrypt.Net.BCrypt.Verify(user.Password, userData.Password))
                 {
                     var claims = new List<Claim>
                     {
-                        new Claim(JwtRegisteredClaimNames.Sub, jwt.Subject),
+                        new Claim(JwtRegisteredClaimNames.Sub, jwt.Subject?? ""),
                         new Claim(JwtRegisteredClaimNames.Jti, JwtRegisteredClaimNames.Jti),
                         new Claim(JwtRegisteredClaimNames.Iat, JwtRegisteredClaimNames.Iat),
                         new Claim("Id", userData.Id.ToString()),
-                        new Claim("Email", userData.Email),
-                        new Claim("Password", userData.Password)
+                        new Claim("Email", userData.Email?? ""),
                     };
 
                     if (userData.RoleId != 0 && userData.Role != null)
                     {
-                        var roleClaim = new Claim(ClaimTypes.Role, userData.Role.Name);
+                        var roleClaim = new Claim(ClaimTypes.Role, userData.Role.Name ?? "");
                         claims.Add(roleClaim);
 
                         // Get the permissions for the role
@@ -61,12 +64,15 @@ namespace Intern_Management.Controllers
 
                         foreach (var permission in rolePermissions)
                         {
-                            var permissionClaim = new Claim("Permission", permission.Description);
-                            claims.Add(permissionClaim);
+                            if (permission != null && permission.Description != null)
+                            {
+                                var permissionClaim = new Claim("Permission", permission.Description);
+                                claims.Add(permissionClaim);
+                            }
                         }
                     }
 
-                    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.Key));
+                    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.Key ?? ""));
                     var signIn = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature);
 
                     var token = new JwtSecurityToken(
@@ -85,11 +91,34 @@ namespace Intern_Management.Controllers
         }
 
         [HttpGet]
-        public async Task<User> GetUser(string username, string password)
+        public async Task<User?> GetUser(string email)
         {
             return await _context.User
                 .Include(u => u.Role)
-                .FirstOrDefaultAsync(u => u.Email == username && u.Password == password);
+                .FirstOrDefaultAsync(u => u.Email == email);
         }
+
+        [HttpPost("CreateAdministrator")]
+        public async Task<IActionResult> CreateAdministrator()
+        {
+            var adminUser = new User
+            {
+                FirstName = "Admin",
+                LastName = "Admin",
+                Gender = GenderType.Male,
+                Email = "admin@example.com",
+                Password = BCrypt.Net.BCrypt.HashPassword("admin123"),
+                PicturePath = null,
+                RoleId = 1
+            };
+
+            _context.User.Add(adminUser);
+            await _context.SaveChangesAsync();
+
+            return Ok("Administrator created successfully");
+        }
+
+
+        
     }
 }
