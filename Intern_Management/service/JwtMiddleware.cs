@@ -1,7 +1,6 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 
-
-namespace Intern_Management.Models
+namespace Intern_Management.service
 {
     public class JwtMiddleware
     {

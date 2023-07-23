@@ -48,6 +48,10 @@ namespace Intern_Management.Controllers
             // Save changes to database
             await _context.SaveChangesAsync();
 
+            // Update the InterviewId field in the Candidate table
+            candidate.InterviewId = interview.Id;
+            await _context.SaveChangesAsync();
+
             return Ok("Les détails de l'entretien ont été soumis avec succès.");
         }
 

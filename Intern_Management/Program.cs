@@ -1,5 +1,6 @@
 using Intern_Management.Data;
 using Intern_Management.Models;
+using Intern_Management.service;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.EntityFrameworkCore;
@@ -23,6 +24,9 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 options.UseSqlServer(builder.Configuration.GetConnectionString("InternManagementConnectionString")));
 
 builder.Services.AddHttpClient();
+
+// Ajoutez l'enregistrement du service IMailService ici
+builder.Services.AddSingleton<IMailService, MailService>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -63,9 +67,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 ValidateIssuer = true,
                 ValidateAudience = true,
                 ValidateIssuerSigningKey = true,
-                ValidIssuer = builder.Configuration["Jwt:Issuer"],
-                ValidAudience = builder.Configuration["Jwt:Audience"],
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+                ValidIssuer = builder.Configuration["Jwt:Issuer"] ?? "baseWebApiIssuer",
+                ValidAudience = builder.Configuration["Jwt:Audience"] ?? "baseWebApiaAudience",
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? "JsonWebApiTokenWithSwaggerAuthorizationAuthenticationAspNetCore"))
             };
         });
 
