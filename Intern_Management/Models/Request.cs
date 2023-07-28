@@ -52,14 +52,15 @@ namespace Intern_Management.Models
 
     public enum InterestedInType
     {
-        [EnumMember(Value = "Web")]
-        Web,
-        [EnumMember(Value = "DotNet")]
+        
+        [EnumMember(Value = "Developpement avec DotNet")]
         DotNet,
-        [EnumMember(Value = "Java")]
+        [EnumMember(Value = "Developpement avec Java")]
         Java,
-        [EnumMember(Value = "ASAP")]
-        ASAP,
+        [EnumMember(Value = "Devops")]
+        Devops,
+        [EnumMember(Value = "SAP")]
+        SAP,
         [EnumMember(Value = "TestAutomation")]
         TestAutomation,
         [EnumMember(Value = "Other")]

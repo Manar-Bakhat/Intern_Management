@@ -124,7 +124,7 @@ namespace Intern_Management.Controllers
                 if (!string.IsNullOrEmpty(currentCandidate.Email))
                 {
                     // Send an email to the candidate with the status "Pending"
-                    await SendEmailToCandidate(currentCandidate.Email, RequestStatus.Pending);
+                    await SendEmailToCandidate(currentCandidate.Email, RequestStatus.Pending, currentCandidate);
                 }
 
 
@@ -215,14 +215,14 @@ namespace Intern_Management.Controllers
                 // Send the email to the candidate with the updated status
                 if (candidate != null && !string.IsNullOrEmpty(candidate.Email))
                 {
-                    await SendEmailToCandidate(candidate.Email, requestStatusDTO.Status);
+                    await SendEmailToCandidate(candidate.Email, requestStatusDTO.Status, candidate);
                 }
             }
 
             return Ok("The request status has been successfully updated.");
         }
 
-        private async Task SendEmailToCandidate(string candidateEmail, RequestStatus newStatus)
+        private async Task SendEmailToCandidate(string candidateEmail, RequestStatus newStatus, Candidate candidate)
         {
             string smtpServer = _configuration["EmailSettings:SmtpServer"] ?? "sandbox.smtp.mailtrap.io";
             int smtpPort = int.Parse(_configuration["EmailSettings:Port"] ?? "587");
@@ -244,15 +244,15 @@ namespace Intern_Management.Controllers
                 string emailBody = ""; 
                 if (newStatus == RequestStatus.Approved)
                 {
-                    emailBody = "Dear Candidate,\r\n\r\nThank you for your interest in NTT DATA. I have received your internship application and carefully reviewed your candidacy.\r\n\r\nI am delighted to inform you that your profile has caught our attention, and we would like to further discuss this opportunity with you. Could you kindly provide us with your availability this week for an interview? This will allow us to get to know each other better and discuss potential areas of collaboration.\r\n\r\nLooking forward to hearing from you. Have a great day!\r\n\r\nBest regards,";
+                    emailBody = $"Dear {candidate.FirstName},\r\n\r\nThank you for your interest in NTT DATA. I have received your internship application and carefully reviewed your candidacy.\r\n\r\nI am delighted to inform you that your profile has caught our attention, and we would like to further discuss this opportunity with you. Could you kindly provide us with your availability this week for an interview? This will allow us to get to know each other better and discuss potential areas of collaboration.\r\n\r\nLooking forward to hearing from you. Have a great day!\r\n\r\nBest regards,";
                 }
                 else if (newStatus == RequestStatus.Rejected)
                 {
-                    emailBody = "Dear Candidate,\r\n\r\nThank you for applying for the internship position at NTT DATA. After careful consideration, we regret to inform you that your application was not selected for further advancement.\r\n\r\nWe appreciate your interest in joining our team, and we wish you the best in your future endeavors.\r\n\r\nBest regards,";
+                    emailBody = $"Dear {candidate.FirstName},\r\n\r\nThank you for applying for the internship position at NTT DATA. After careful consideration, we regret to inform you that your application was not selected for further advancement.\r\n\r\nWe appreciate your interest in joining our team, and we wish you the best in your future endeavors.\r\n\r\nBest regards,";
                 }
                 else if (newStatus == RequestStatus.Pending)
                 {
-                    emailBody = "Dear Candidate,\r\n\r\nThis is to confirm that we have received your application for the internship position at NTT DATA. Thank you for your interest in joining our team.\r\n\r\nWe are currently reviewing all applications and will provide an update on your candidacy soon.\r\n\r\nBest regards,";
+                    emailBody = $"Dear {candidate.FirstName},\r\n\r\nThis is to confirm that we have received your application for the internship position at NTT DATA. Thank you for your interest in joining our team.\r\n\r\nWe are currently reviewing all applications and will provide an update on your candidacy soon.\r\n\r\nBest regards,";
                 }
 
                 message.Body = new TextPart("plain")
@@ -272,37 +272,37 @@ namespace Intern_Management.Controllers
         [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> AssignSupervisorToCandidate(int candidateId, [FromBody] SupervisorAssignmentDTO supervisorAssignmentDTO)
         {
-            // Récupérer le candidat spécifique en fonction de l'ID du candidat
+            // Retrieve specific candidate based on candidate ID
             Candidate? candidate = await _context.Candidates
-                .Include(c => c.Request) // Assurez-vous d'inclure la demande associée au candidat
+                .Include(c => c.Request) // Be sure to include the application associated with the candidate
                 .FirstOrDefaultAsync(c => c.Id == candidateId);
 
             if (candidate == null)
             {
-                return BadRequest("Le candidat spécifié n'a pas été trouvé.");
+                return BadRequest("The specified candidate was not found.");
             }
 
-            // Vérifier si la demande du candidat est approuvée
+            // Check if the candidate's application is approved
             if (candidate.Request?.Status != RequestStatus.Approved)
             {
-                return BadRequest("Le candidat doit avoir une demande approuvée pour lui affecter un superviseur.");
+                return BadRequest("\r\nCandidate must have an approved request to assign a supervisor.");
             }
 
-            // Récupérer le superviseur spécifique en fonction de l'ID du superviseur envoyé dans SupervisorAssignmentDTO
+            // Retrieve the specific supervisor based on the supervisor ID sent in SupervisorAssignmentDTO
             Supervisor? supervisor = await _context.Supervisors.FindAsync(supervisorAssignmentDTO.SupervisorId);
 
             if (supervisor == null)
             {
-                return BadRequest("Le superviseur spécifié n'a pas été trouvé.");
+                return BadRequest("The specified supervisor was not found.");
             }
 
-            // Affecter le superviseur au candidat spécifique
-            candidate.SupervisorId = supervisor.Id; // Correction ici
+            // Assign the supervisor to the specific candidate
+            candidate.SupervisorId = supervisor.Id;
 
-            // Enregistrer les changements dans la base de données
+            // Save changes to database
             await _context.SaveChangesAsync();
 
-            return Ok("Le superviseur a été affecté au candidat avec succès.");
+            return Ok("The supervisor has been successfully assigned to the candidate.");
         }
 
 

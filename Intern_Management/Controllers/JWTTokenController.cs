@@ -107,7 +107,7 @@ namespace Intern_Management.Controllers
                 LastName = "Admin",
                 Gender = GenderType.Male,
                 Email = "internship.test21@gmail.com",
-                Password = BCrypt.Net.BCrypt.HashPassword("xccqrnqcxskwggwe"),
+                Password = BCrypt.Net.BCrypt.HashPassword("Internship2023"),
                 PicturePath = null,
                 RoleId = 1
             };

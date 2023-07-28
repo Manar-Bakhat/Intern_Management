@@ -4,6 +4,13 @@ using Intern_Management.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using BCrypt.Net;
+using System.Text;
 
 namespace Intern_Management.Controllers
 {
@@ -11,7 +18,6 @@ namespace Intern_Management.Controllers
     [ApiController]
     public class AccountController : ControllerBase
     {
-
         private readonly ApplicationDbContext _context;
 
         public AccountController(ApplicationDbContext context)
@@ -19,48 +25,45 @@ namespace Intern_Management.Controllers
             _context = context;
         }
 
-        // Registration Method of Candidate
-
         [HttpPost("RegisterCandidate")]
         public async Task<IActionResult> RegisterCandidate(CandidateRegistrationDTO candidateDTO)
         {
             if (ModelState.IsValid)
             {
-                // Check if the candidate's email is already in use
                 var existingUser = await _context.User.FirstOrDefaultAsync(u => u.Email == candidateDTO.Email);
                 if (existingUser != null)
                 {
                     return BadRequest("An account with this email already exists.");
                 }
 
-                // Encrypt the candidate's password
                 var hashedPassword = BCrypt.Net.BCrypt.HashPassword(candidateDTO.Password);
 
-                // Create a new Candidate object from DTO data
                 var candidate = new Candidate
                 {
                     FirstName = candidateDTO.FirstName,
                     LastName = candidateDTO.LastName,
                     Gender = candidateDTO.Gender,
                     Email = candidateDTO.Email,
-                    Password = hashedPassword, // encrypted password
+                    Password = hashedPassword,
                     BirthdayDate = candidateDTO.BirthdayDate,
                     City = candidateDTO.City,
                     PhoneNumber = candidateDTO.PhoneNumber
                 };
 
-                // Find the "Candidate" role in the database
-                var candidateRole = await _context.Roles.FirstOrDefaultAsync(r => r.Id == 3); // ID 3 corresponds to the "Candidate" role
+                // Generate the default profile picture based on the user's first name
+                if (!string.IsNullOrEmpty(candidate.FirstName))
+                {
+                    candidate.PicturePath = GenerateDefaultProfilePicture(candidate.FirstName);
+                }
 
+
+                var candidateRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "Candidate");
                 if (candidateRole == null)
                 {
                     return BadRequest("The role 'Candidate' was not found in the database.");
                 }
+                candidate.Role = candidateRole;
 
-                // Assign the "Candidate" role ID to the candidate
-                candidate.RoleId = candidateRole.Id;
-
-                // Check if academic qualifications are provided
                 if (candidateDTO.AcademicQualifications == null || candidateDTO.AcademicQualifications.Count == 0)
                 {
                     return BadRequest("Academic qualifications are mandatory.");
@@ -83,7 +86,6 @@ namespace Intern_Management.Controllers
 
                 candidate.AcademicQualifications = academicQualifications;
 
-                // Check if experiences are provided
                 if (candidateDTO.Experiences != null && candidateDTO.Experiences.Count > 0)
                 {
                     var experiences = new List<Experience>();
@@ -104,7 +106,6 @@ namespace Intern_Management.Controllers
                     candidate.Experiences = experiences;
                 }
 
-                // Check if skills are provided
                 if (candidateDTO.Skills != null && candidateDTO.Skills.Count > 0)
                 {
                     var skills = new List<Skill>();
@@ -121,34 +122,28 @@ namespace Intern_Management.Controllers
                     candidate.Skills = skills;
                 }
 
-                // Register the candidate in the database
                 _context.Candidates.Add(candidate);
                 await _context.SaveChangesAsync();
 
                 return Ok("The candidate's account has been successfully created.");
             }
 
-            return BadRequest("Données invalides pour la création du compte du candidat.");
+            return BadRequest("Invalid data for candidate account creation.");
         }
-
-        // Registration Method of Supervisor
 
         [HttpPost("RegisterSupervisor")]
         public async Task<IActionResult> RegisterSupervisor(SupervisorRegistrationDTO supervisorDTO)
         {
             if (ModelState.IsValid)
             {
-                // Check if supervisor email is already in use
                 var existingUser = await _context.User.FirstOrDefaultAsync(u => u.Email == supervisorDTO.Email);
                 if (existingUser != null)
                 {
                     return BadRequest("An account with this email already exists.");
                 }
 
-                // Encrypt password
                 var hashedPassword = BCrypt.Net.BCrypt.HashPassword(supervisorDTO.Password);
 
-                // Create a new Supervisor object from the DTO data
                 var supervisor = new Supervisor
                 {
                     FirstName = supervisorDTO.FirstName,
@@ -161,18 +156,19 @@ namespace Intern_Management.Controllers
                     Specialisation = supervisorDTO.Specialisation
                 };
 
-                // Find the "Supervisor" role in the database
-                var supervisorRole = await _context.Roles.FirstOrDefaultAsync(r => r.Id == 2); // ID 2 corresponds to the "Supervisor" role
+                // Generate the default profile picture based on the supervisor's first name
+                if (!string.IsNullOrEmpty(supervisor.FirstName))
+                {
+                    supervisor.PicturePath = GenerateDefaultProfilePicture(supervisor.FirstName);
+                }
 
+                var supervisorRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "Supervisor");
                 if (supervisorRole == null)
                 {
                     return BadRequest("The role 'Supervisor' was not found in the database.");
                 }
+                supervisor.Role = supervisorRole;
 
-                // Assign the "Supervisor" role ID to the supervisor
-                supervisor.RoleId = supervisorRole.Id;
-
-                // Register the supervisor in the database
                 _context.Supervisors.Add(supervisor);
                 await _context.SaveChangesAsync();
 
@@ -182,6 +178,31 @@ namespace Intern_Management.Controllers
             return BadRequest("Invalid data for supervisor account creation.");
         }
 
+
+        private string GenerateDefaultProfilePicture(string firstName)
+        {
+            // Get the first letter of the first name and convert it to uppercase
+            string firstLetter = firstName.Substring(0, 1).ToUpper();
+
+            // You can choose any colors for the circle background
+            // Here, we are using a random color from a predefined list
+            List<string> circleColors = new List<string> { "#FF5733", "#33FF57", "#5733FF", "#FF57FF", "#33FFFF", "#FFFF33" };
+            Random rand = new Random();
+            string circleColor = circleColors[rand.Next(circleColors.Count)];
+
+            // Create the SVG code for the circular image with the letter
+            string svgCode = $@"
+        <svg height='100' width='100'>
+            <circle cx='50' cy='50' r='40' fill='{circleColor}' />
+            <text x='50%' y='50%' text-anchor='middle' fill='white' font-size='40'>{firstLetter}</text>
+        </svg>";
+
+            // Convert the SVG code to a base64 string
+            byte[] svgBytes = Encoding.UTF8.GetBytes(svgCode);
+            string base64Image = "data:image/svg+xml;base64," + Convert.ToBase64String(svgBytes);
+
+            return base64Image;
+        }
 
     }
 }
