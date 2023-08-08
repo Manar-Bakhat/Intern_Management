@@ -11,6 +11,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using BCrypt.Net;
 using System.Text;
+using SkiaSharp;
+using System.Drawing;
+using System.Drawing.Imaging;
 
 namespace Intern_Management.Controllers
 {
@@ -179,6 +182,7 @@ namespace Intern_Management.Controllers
         }
 
 
+
         private string GenerateDefaultProfilePicture(string firstName)
         {
             // Get the first letter of the first name and convert it to uppercase
@@ -190,19 +194,43 @@ namespace Intern_Management.Controllers
             Random rand = new Random();
             string circleColor = circleColors[rand.Next(circleColors.Count)];
 
-            // Create the SVG code for the circular image with the letter
-            string svgCode = $@"
-        <svg height='100' width='100'>
-            <circle cx='50' cy='50' r='40' fill='{circleColor}' />
-            <text x='50%' y='50%' text-anchor='middle' fill='white' font-size='40'>{firstLetter}</text>
-        </svg>";
+            // Create a SKBitmap with the dimensions of the image (100x100 pixels)
+            using (var bitmap = new SKBitmap(100, 100))
+            {
+                // Create a SKCanvas to draw on the SKBitmap
+                using (var canvas = new SKCanvas(bitmap))
+                {
+                    // Clear the canvas with the circle color
+                    canvas.Clear(SKColor.Parse(circleColor));
 
-            // Convert the SVG code to a base64 string
-            byte[] svgBytes = Encoding.UTF8.GetBytes(svgCode);
-            string base64Image = "data:image/svg+xml;base64," + Convert.ToBase64String(svgBytes);
+                    // Create a SKPaint object for the text
+                    using (var textPaint = new SKPaint())
+                    {
+                        textPaint.Color = SKColors.White;
+                        textPaint.TextSize = 40;
+                        textPaint.TextAlign = SKTextAlign.Center;
+                        textPaint.Typeface = SKTypeface.FromFamilyName("Arial"); // Replace with the desired font
 
-            return base64Image;
+                        // Calculate the position to center the text in the circle
+                        float x = bitmap.Width / 2;
+                        float y = (bitmap.Height + textPaint.TextSize) / 2;
+
+                        // Draw the first letter in the center of the circle
+                        canvas.DrawText(firstLetter, x, y, textPaint);
+                    }
+
+                    // Convert the SKBitmap to a byte array in JPEG format
+                    using (var image = SKImage.FromBitmap(bitmap))
+                    using (var data = image.Encode(SKEncodedImageFormat.Jpeg, 100))
+                    {
+                        byte[] jpegBytes = data.ToArray();
+                        string base64Image = "data:image/jpeg;base64," + Convert.ToBase64String(jpegBytes);
+
+                        return base64Image;
+                    }
+                }
+
+            }
         }
-
     }
 }
