@@ -160,16 +160,18 @@ namespace Intern_Management.Controllers
         {
             try
             {
+                // Include the Certificates when querying the Requests
+                var allRequests = await _context.Requests
+                    .Include(r => r.Candidate)
+                    .Include(r => r.Certificates) // Include the Certificates
+                    .ToListAsync();
+
                 // Configure JsonSerializerOptions with ReferenceHandler.Preserve
                 var options = new JsonSerializerOptions
                 {
                     ReferenceHandler = ReferenceHandler.Preserve,
                     WriteIndented = true // Optional: To format the JSON output with indentation
                 };
-
-                var allRequests = await _context.Requests
-                    .Include(r => r.Candidate)
-                    .ToListAsync();
 
                 // Serialize the result to JSON using JsonSerializerOptions
                 var jsonResult = JsonSerializer.Serialize(allRequests, options);
@@ -181,6 +183,7 @@ namespace Intern_Management.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while retrieving the requests.");
             }
         }
+
 
         [HttpPut("UpdateRequestStatus/{requestId}")]
         [Authorize(Roles = "Administrator")]

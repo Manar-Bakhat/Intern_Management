@@ -9,6 +9,8 @@ namespace Intern_Management.Models.DTO
 
         public string? LastName { get; set; }
 
+        public string? Email { get; set; }
+
         public DateTime BirthdayDate { get; set; }
 
         public string? City { get; set; }

@@ -50,6 +50,7 @@ namespace Intern_Management.Controllers
             {
                 FirstName = candidate.FirstName,
                 LastName = candidate.LastName,
+                Email = candidate.Email,
                 BirthdayDate = candidate.BirthdayDate,
                 City = candidate.City,
                 PhoneNumber = candidate.PhoneNumber,
@@ -306,6 +307,9 @@ namespace Intern_Management.Controllers
                     return "application/octet-stream"; // Default content type for unknown file extensions
             }
         }
+
+
+      
 
     }
 }

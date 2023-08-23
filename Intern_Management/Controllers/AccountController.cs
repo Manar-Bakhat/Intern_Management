@@ -14,6 +14,8 @@ using System.Text;
 using SkiaSharp;
 using System.Drawing;
 using System.Drawing.Imaging;
+using Microsoft.AspNetCore.Authorization;
+using System.Data;
 
 namespace Intern_Management.Controllers
 {
@@ -37,6 +39,12 @@ namespace Intern_Management.Controllers
                 if (existingUser != null)
                 {
                     return BadRequest("An account with this email already exists.");
+                }
+
+                // Password Confirmation Check
+                if (candidateDTO.Password != candidateDTO.ConfirmPassword)
+                {
+                    return BadRequest("Password and confirm password do not match.");
                 }
 
                 var hashedPassword = BCrypt.Net.BCrypt.HashPassword(candidateDTO.Password);
@@ -135,6 +143,7 @@ namespace Intern_Management.Controllers
         }
 
         [HttpPost("RegisterSupervisor")]
+        [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> RegisterSupervisor(SupervisorRegistrationDTO supervisorDTO)
         {
             if (ModelState.IsValid)
@@ -179,6 +188,40 @@ namespace Intern_Management.Controllers
             }
 
             return BadRequest("Invalid data for supervisor account creation.");
+        }
+
+
+        [HttpPost("RegisterAdministrator")]
+        public async Task<IActionResult> RegisterAdministrator(AdministratorRegistrationDTO administratorDTO)
+        {
+            if (ModelState.IsValid)
+            {
+                var existingUser = await _context.User.FirstOrDefaultAsync(u => u.Email == administratorDTO.Email);
+                if (existingUser != null)
+                {
+                    return BadRequest("An account with this email already exists.");
+                }
+
+                var hashedPassword = BCrypt.Net.BCrypt.HashPassword(administratorDTO.Password);
+
+                var administrator = new User
+                {
+                    FirstName = administratorDTO.FirstName,
+                    LastName = administratorDTO.LastName,
+                    Gender = administratorDTO.Gender,
+                    Email = administratorDTO.Email,
+                    Password = hashedPassword,
+                    PicturePath = GenerateDefaultProfilePicture(administratorDTO.FirstName), // Generate the default profile picture
+                    RoleId = 1 // Assuming the role ID for administrator is 1
+                };
+
+                _context.User.Add(administrator);
+                await _context.SaveChangesAsync();
+
+                return Ok("The administrator account has been successfully created.");
+            }
+
+            return BadRequest("Invalid data for administrator account creation.");
         }
 
 

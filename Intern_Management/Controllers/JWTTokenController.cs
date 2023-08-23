@@ -53,7 +53,7 @@ namespace Intern_Management.Controllers
 
                     if (userData.RoleId != 0 && userData.Role != null)
                     {
-                        var roleClaim = new Claim(ClaimTypes.Role, userData.Role.Name ?? "");
+                        var roleClaim = new Claim(ClaimTypes.Role, userData.Role.Name ?? "DefaultRoleName");
                         claims.Add(roleClaim);
 
                         // Get the permissions for the role

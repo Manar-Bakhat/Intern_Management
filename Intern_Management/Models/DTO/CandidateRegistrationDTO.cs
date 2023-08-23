@@ -22,6 +22,10 @@ namespace Intern_Management.Models.DTO
         public string? Password { get; set; }
 
         [Required]
+        [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
+        public string? ConfirmPassword { get; set; }
+
+        [Required]
         public DateTime BirthdayDate { get; set; }
 
         [Required]
