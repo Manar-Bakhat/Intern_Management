@@ -131,5 +131,29 @@ namespace Intern_Management.Controllers
         }
 
 
+        [HttpGet("total-candidates")]
+        public IActionResult GetTotalCandidates()
+        {
+            int totalCandidates = _context.Candidates.Count(c => c.RoleId == 3);
+            return Ok(new { TotalCandidates = totalCandidates });
+        }
+
+
+        [HttpGet("GetTotalRequests")]
+        public IActionResult GetTotalRequests()
+        {
+            try
+            {
+                int totalRequests = _context.Requests.Count();
+                return Ok(new { TotalRequests = totalRequests });
+            }
+            catch
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while retrieving the total requests.");
+            }
+        }
+
+
+
     }
 }

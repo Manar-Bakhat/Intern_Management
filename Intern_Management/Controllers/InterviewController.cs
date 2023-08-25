@@ -87,5 +87,34 @@ namespace Intern_Management.Controllers
 
             return Ok(interviewDTO);
         }
+
+        // Endpoint to retrieve all interview details
+        [HttpGet("GetAllInterviews")]
+        [Authorize(Roles = "Administrator")]
+        public async Task<IActionResult> GetAllInterviews()
+        {
+            try
+            {
+                var allInterviews = await _context.Interviews
+                    .Include(i => i.Candidate) // Include the Candidate associated with the interview
+                    .Select(i => new
+                    {
+                        Interview = i,
+                        CandidateName = i.Candidate != null ? new CandidateDTO
+                        {
+                            FirstName = i.Candidate.FirstName,
+                            LastName = i.Candidate.LastName
+                        } : null
+                    })
+                    .ToListAsync();
+
+                return Ok(allInterviews);
+            }
+            catch
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while retrieving the interviews.");
+            }
+        }
+
     }
 }
