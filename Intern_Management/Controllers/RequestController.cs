@@ -227,11 +227,11 @@ namespace Intern_Management.Controllers
 
         private async Task SendEmailToCandidate(string candidateEmail, RequestStatus newStatus, Candidate candidate)
         {
-            string smtpServer = _configuration["EmailSettings:SmtpServer"] ?? "sandbox.smtp.mailtrap.io";
-            int smtpPort = int.Parse(_configuration["EmailSettings:Port"] ?? "587");
+            string smtpServer = "smtp.gmail.com"; // Use Gmail SMTP server
+            int smtpPort = 587;
             SecureSocketOptions socketOptions = SecureSocketOptions.StartTls;
-            string username = _configuration["EmailSettings:Username"] ?? "29cc511da7245b";
-            string password = _configuration["EmailSettings:Password"] ?? "cc5982a97aff22";
+            string username = "internship.test21@gmail.com"; // Your Gmail email address
+            string password = "xabxglhwymavmuaj"; // Your generated app password for Gmail
 
             using (var client = new SmtpClient())
             {
@@ -244,7 +244,7 @@ namespace Intern_Management.Controllers
                 message.Subject = "Internship Application Update";
 
                 // Customize the email body based on the new status
-                string emailBody = ""; 
+                string emailBody = "";
                 if (newStatus == RequestStatus.Approved)
                 {
                     emailBody = $"Dear {candidate.FirstName},\r\n\r\nThank you for your interest in NTT DATA. I have received your internship application and carefully reviewed your candidacy.\r\n\r\nI am delighted to inform you that your profile has caught our attention, and we would like to further discuss this opportunity with you. Could you kindly provide us with your availability this week for an interview? This will allow us to get to know each other better and discuss potential areas of collaboration.\r\n\r\nLooking forward to hearing from you. Have a great day!\r\n\r\nBest regards,";
@@ -258,6 +258,7 @@ namespace Intern_Management.Controllers
                     emailBody = $"Dear {candidate.FirstName},\r\n\r\nThis is to confirm that we have received your application for the internship position at NTT DATA. Thank you for your interest in joining our team.\r\n\r\nWe are currently reviewing all applications and will provide an update on your candidacy soon.\r\n\r\nBest regards,";
                 }
 
+
                 message.Body = new TextPart("plain")
                 {
                     Text = emailBody
@@ -267,7 +268,6 @@ namespace Intern_Management.Controllers
                 await client.DisconnectAsync(true);
             }
         }
-
 
 
         //
@@ -307,6 +307,27 @@ namespace Intern_Management.Controllers
 
             return Ok("The supervisor has been successfully assigned to the candidate.");
         }
+
+
+
+        [HttpGet("DownloadFile/{fileName}")]
+        [AllowAnonymous] // Vous pouvez ajuster l'autorisation en fonction de vos besoins
+        public IActionResult DownloadFile(string fileName)
+        {
+            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "uploads", fileName);
+
+            if (System.IO.File.Exists(filePath))
+            {
+                var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+                var contentType = "application/octet-stream"; // Vous pouvez ajuster le type de contenu en fonction du type de fichier
+                return File(fileStream, contentType, fileName);
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
+
 
 
 

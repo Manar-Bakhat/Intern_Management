@@ -203,7 +203,7 @@ namespace Intern_Management.Controllers
 
 
 
-        // PUT api/Image/picture
+        // PUT api/Candidate/picture
         [HttpPut("picture")]
         public async Task<IActionResult> PutCandidatePicture([FromBody] PictureDTO pictureDTO)
         {
@@ -238,8 +238,8 @@ namespace Intern_Management.Controllers
                 // Generate a unique file name for the image (you can use GUID or any other method)
                 string fileName = Guid.NewGuid().ToString() + ".jpg"; // You can use the appropriate file extension based on the image format
 
-                // Combine the folder path with the file name
-                string imagePath = Path.Combine("images", "profilePicture", fileName);
+                // Combine the absolute folder path with the file name
+                string imagePath = Path.Combine("C:\\Users\\hp\\source\\repos\\Intern_Management\\Intern_Management\\images\\profilePicture", fileName);
 
                 // Save the image to the specified path
                 await System.IO.File.WriteAllBytesAsync(imagePath, imageData);
@@ -263,6 +263,8 @@ namespace Intern_Management.Controllers
             }
         }
 
+        // ...
+
         [HttpGet("picture")]
         public IActionResult GetCandidatePicture()
         {
@@ -277,19 +279,21 @@ namespace Intern_Management.Controllers
                 return NotFound("Candidate picture not found.");
             }
 
-            // Get the base64 image data from the PicturePath field
-            string base64ImageData = candidate.PicturePath.Substring(candidate.PicturePath.IndexOf(',') + 1);
+            // Read the image file content and convert it to base64
+            byte[] imageBytes = System.IO.File.ReadAllBytes(Path.Combine("C:\\Users\\hp\\source\\repos\\Intern_Management\\Intern_Management\\", candidate.PicturePath));
+            string base64Image = Convert.ToBase64String(imageBytes);
 
-            // Create the PictureDTO instance to transfer the image data to the client
+            // Create a PictureDTO object with the base64 image data
             var pictureDTO = new PictureDTO
             {
-                FileName = "candidate_picture.jpg", // You can set the file name dynamically based on your implementation
-                ContentType = "image/jpeg", // Set the correct content type based on the image format
-                Data = base64ImageData // Store the base64 image data in the Data property
+                FileName = "candidate_picture.jpg",
+                ContentType = "image/jpeg",
+                Data = base64Image
             };
 
             return Ok(pictureDTO);
         }
+
 
         // Helper method to get the content type from the image file extension
         private string GetContentTypeFromImageExtension(string fileExtension)

@@ -10,6 +10,7 @@ namespace Intern_Management.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "Administrator")]
     public class AdministratorController : ControllerBase
     {
 
@@ -153,6 +154,75 @@ namespace Intern_Management.Controllers
             }
         }
 
+
+        // POST api/administrator/delete-candidate/{id}
+        [HttpDelete("delete-candidate/{id}")]
+        public async Task<IActionResult> DeleteCandidate(int id)
+        {
+            try
+            {
+                // Find the candidate by ID
+                var candidate = await _context.Candidates.FindAsync(id);
+
+                if (candidate == null)
+                {
+                    return NotFound("Candidate not found.");
+                }
+
+                // Remove the candidate
+                _context.Candidates.Remove(candidate);
+                await _context.SaveChangesAsync();
+
+                return Ok("Candidate deleted successfully.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred while deleting the candidate: {ex.Message}");
+            }
+        }
+
+
+        // POST api/administrator/delete-supervisor/{id}
+        [HttpDelete("delete-supervisor/{id}")]
+        public async Task<IActionResult> DeleteSupervisor(int id)
+        {
+            try
+            {
+                // Find the supervisor by ID
+                var supervisor = await _context.Supervisors.FindAsync(id);
+
+                if (supervisor == null)
+                {
+                    return NotFound("Supervisor not found.");
+                }
+
+                // Remove the supervisor
+                _context.Supervisors.Remove(supervisor);
+                await _context.SaveChangesAsync();
+
+                return Ok("Supervisor deleted successfully.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred while deleting the supervisor: {ex.Message}");
+            }
+        }
+
+
+        //
+        [HttpGet("total-interviews")]
+        public IActionResult GetTotalInterviews()
+        {
+            try
+            {
+                int totalInterviews = _context.Interviews.Count();
+                return Ok(new { TotalInterviews = totalInterviews });
+            }
+            catch
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while retrieving the total interviews.");
+            }
+        }
 
 
     }
