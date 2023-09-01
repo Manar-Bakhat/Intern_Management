@@ -203,6 +203,8 @@ namespace Intern_Management.Controllers
 
 
 
+
+
         // PUT api/Candidate/picture
         [HttpPut("picture")]
         public async Task<IActionResult> PutCandidatePicture([FromBody] PictureDTO pictureDTO)
