@@ -15,6 +15,8 @@ namespace Intern_Management.Models
 
         public LanguageSkills LanguageSkills { get; set; }
 
+        public DateTime CreatedDate { get; set; }
+
         // Navigation property for Candidate
 
         public int CandidateId { get; set; }

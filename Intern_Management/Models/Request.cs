@@ -33,6 +33,8 @@ namespace Intern_Management.Models
         [Required(ErrorMessage = "Type Internship is required")]
         public TypeInternshipType TypeInternship { get; set; }
 
+        public DateTime CreatedDate { get; set; }
+
 
         // Navigation property for Candidate
         [ForeignKey("Candidate")]
@@ -52,19 +54,29 @@ namespace Intern_Management.Models
 
     public enum InterestedInType
     {
-        
-        [EnumMember(Value = "Developpement avec DotNet")]
-        DotNet,
-        [EnumMember(Value = "Developpement avec Java")]
-        Java,
-        [EnumMember(Value = "Devops")]
-        Devops,
-        [EnumMember(Value = "SAP")]
-        SAP,
-        [EnumMember(Value = "TestAutomation")]
-        TestAutomation,
-        [EnumMember(Value = "Other")]
-        Other
+
+        [EnumMember(Value = "BackendDeveloper Java")]
+        BackendDeveloperJava,
+        [EnumMember(Value = "BackendDeveloper DotNet")]
+        BackendDeveloperDotNet,
+        [EnumMember(Value = "FrontendDeveloper Angular")]
+        FrontendDeveloperAngular,
+        [EnumMember(Value = "FrontendDeveloper ReactJS")]
+        FrontendDeveloperReactJS,
+        [EnumMember(Value = "FullStackDeveloper Java")]
+        FullStackDeveloperJava,
+        [EnumMember(Value = "FullStackDeveloper DotNet")]
+        FullStackDeveloperDotNet,
+        [EnumMember(Value = "Tester")]
+        Tester,
+        [EnumMember(Value = "ProjectManager")]
+        ProjectManager,
+        [EnumMember(Value = "DataAnalytics")]
+        DataAnalytics,
+        [EnumMember(Value = "BigData")]
+        BigData,
+        [EnumMember(Value = "Business Intelligence")]
+        BusinessIntelligence,
     }
 
     public enum TypeInternshipType

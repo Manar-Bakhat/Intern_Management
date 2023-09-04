@@ -68,7 +68,8 @@ namespace Intern_Management.Controllers
                     StartDateInternship = requestDTO.StartDateInternship,
                     EndDateInternship = requestDTO.EndDateInternship,
                     TypeInternship = requestDTO.TypeInternship,
-                    CandidateId = currentCandidate.Id // Associate the request with the current candidate
+                    CandidateId = currentCandidate.Id, // Associate the request with the current candidate
+                    CreatedDate = DateTime.UtcNow
                 };
 
                 // Save CV file if provided
@@ -327,6 +328,100 @@ namespace Intern_Management.Controllers
                 return NotFound();
             }
         }
+
+
+        //
+        [HttpGet("GetRequestsByTimePeriod")]
+     
+        public async Task<IActionResult> GetRequestsByTimePeriod(DateTime startDate, DateTime endDate)
+        {
+            try
+            {
+                // Query the Requests based on the date range
+                var requestsInTimePeriod = await _context.Requests
+                    .Where(r => r.CreatedDate >= startDate && r.CreatedDate <= endDate)
+                    .ToListAsync();
+
+                return Ok(requestsInTimePeriod);
+            }
+            catch
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while retrieving the requests.");
+            }
+        }
+
+
+        //
+        [HttpGet("SuggestSupervisorForCandidate/{candidateId}")]
+        public IActionResult SuggestSupervisorForCandidate(int candidateId)
+        {
+            // Retrieve the candidate based on their ID
+            var candidate = _context.Candidates
+                .Include(c => c.Request)
+                .FirstOrDefault(c => c.Id == candidateId);
+
+            if (candidate == null)
+            {
+                return BadRequest("The specified candidate was not found.");
+            }
+
+           
+            // Retrieve the list of supervisors with the same specialization as the candidate's interest
+            var matchingSupervisors = _context.Supervisors
+               .ToList() // Récupérer tous les superviseurs dans la mémoire
+               .Where(s => s.Specialisation.ToString() == candidate.Request.InterestedIn.ToString())
+               .ToList(); // Appliquer ToString() dans la mémoire
+
+
+            // If you have matching supervisors, filter those who have less than 2 assigned candidates
+            var availableSupervisors = matchingSupervisors
+                .Where(s => s.AssignedCandidates == null || s.AssignedCandidates.Count < 2)
+                .ToList();
+
+            if (availableSupervisors.Any())
+            {
+                // You can now assign scores based on the match between interest and specialization fields
+                // For example, higher score for exact match, lower for partial match
+                var supervisorsWithScores = availableSupervisors
+                    .Select(s => new
+                    {
+                        Supervisor = s,
+                        Score = CalculateMatchScore(s, candidate.Request.InterestedIn) // Use "this" to refer to the current instance
+                    })
+                    .ToList();
+
+                // Sort the list of supervisors based on descending score
+                var sortedSupervisors = supervisorsWithScores.OrderByDescending(s => s.Score).ToList();
+
+                // Select the supervisor with the highest score as the suggested supervisor
+                var suggestedSupervisor = sortedSupervisors.FirstOrDefault()?.Supervisor;
+
+                return Ok(suggestedSupervisor);
+            }
+
+            return NotFound("No available matching supervisor was found.");
+        }
+
+        private int CalculateMatchScore(Supervisor supervisor, InterestedInType candidateInterest)
+        {
+            // Here, you can implement logic to assign a score based on the match
+            // between supervisor's specialization and candidate's interest
+            // Higher score for exact match, lower for partial match, and so on
+            if (supervisor.Specialisation.ToString() == candidateInterest.ToString())
+            {
+                return 3; // High score for exact match
+            }
+            else if (supervisor.Specialisation == (SpecialisationType)candidateInterest)
+            {
+                return 2; // Medium score for partial match
+            }
+            else
+            {
+                return 1; // Low score for no match
+            }
+        }
+
+
 
 
 

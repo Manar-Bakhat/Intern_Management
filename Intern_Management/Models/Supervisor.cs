@@ -23,18 +23,28 @@ namespace Intern_Management.Models
 
     public enum SpecialisationType
     {
-        [EnumMember(Value = "BackendDeveloper")]
-        BackendDeveloper,
-        [EnumMember(Value = "FrontendDeveloper")]
-        FrontendDeveloper,
-        [EnumMember(Value = "FullStackDeveloper")]
-        FullStackDeveloper,
+        [EnumMember(Value = "BackendDeveloper Java")]
+        BackendDeveloperJava,
+        [EnumMember(Value = "BackendDeveloper DotNet")]
+        BackendDeveloperDotNet,
+        [EnumMember(Value = "FrontendDeveloper Angular")]
+        FrontendDeveloperAngular,
+        [EnumMember(Value = "FrontendDeveloper ReactJS")]
+        FrontendDeveloperReactJS,
+        [EnumMember(Value = "FullStackDeveloper Java")]
+        FullStackDeveloperJava,
+        [EnumMember(Value = "FullStackDeveloper DotNet")]
+        FullStackDeveloperDotNet,
         [EnumMember(Value = "Tester")]
         Tester,
         [EnumMember(Value = "ProjectManager")]
         ProjectManager,
         [EnumMember(Value = "DataAnalytics")]
-        DataAnalytics
+        DataAnalytics,
+        [EnumMember(Value = "BigData")]
+        BigData,
+        [EnumMember(Value = "Business Intelligence")]
+        BusinessIntelligence,
     }
 }
 

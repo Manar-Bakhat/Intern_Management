@@ -127,6 +127,9 @@ namespace Intern_Management.Migrations
                     b.Property<int>("CandidateId")
                         .HasColumnType("int");
 
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("FunctionalSkills")
                         .HasColumnType("int");
 
@@ -181,6 +184,9 @@ namespace Intern_Management.Migrations
 
                     b.Property<int>("CandidateId")
                         .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime>("EndDateInternship")
                         .HasColumnType("datetime2");

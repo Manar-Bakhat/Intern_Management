@@ -195,6 +195,7 @@ namespace Intern_Management.Migrations
                     TechnicalSkills = table.Column<int>(type: "int", nullable: false),
                     PersonalCompetencies = table.Column<int>(type: "int", nullable: false),
                     LanguageSkills = table.Column<int>(type: "int", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     CandidateId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -221,6 +222,7 @@ namespace Intern_Management.Migrations
                     StartDateInternship = table.Column<DateTime>(type: "datetime2", nullable: false),
                     EndDateInternship = table.Column<DateTime>(type: "datetime2", nullable: false),
                     TypeInternship = table.Column<int>(type: "int", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     CandidateId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>

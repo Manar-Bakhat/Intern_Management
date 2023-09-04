@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Intern_Management.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230727140610_version 1")]
+    [Migration("20230902015941_version1")]
     partial class version1
     {
         /// <inheritdoc />
@@ -130,6 +130,9 @@ namespace Intern_Management.Migrations
                     b.Property<int>("CandidateId")
                         .HasColumnType("int");
 
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("FunctionalSkills")
                         .HasColumnType("int");
 
@@ -184,6 +187,9 @@ namespace Intern_Management.Migrations
 
                     b.Property<int>("CandidateId")
                         .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime>("EndDateInternship")
                         .HasColumnType("datetime2");
